@@ -1,25 +1,22 @@
 #include <znc/Modules.h>
 #include <znc/User.h>
 #include <znc/IRCNetwork.h>
+#include <znc/Query.h>
 
-class CFred : public CModule {
+class CBlockKeyX : public CModule {
 public:
-        MODCONSTRUCTOR(CFred) {}
+        MODCONSTRUCTOR(CBlockKeyX) {}
 
-        virtual EModRet OnPrivNotice(CNick& Nick, CString& sMessage) {
-                if (m_pNetwork->GetClients().empty() && sMessage.Token(0) == "DH1080_INIT") {
-                        CString sPre, sPost;
-
-                        sPre = ":" + GetModNick() + "!" + GetModName() + "@znc.in PRIVMSG ";
-
-                        sPost = "Blocked DH1080_INIT from " + Nick.GetNickMask();
-                        sPost = " :" + m_pUser->AddTimestamp(sPost);
-
-                        m_pNetwork->AddRawBuffer(sPre, sPost);
+        EModRet OnPrivNotice(CNick& Nick, CString& sMessage) override {
+                if (m_pNetwork->GetClients().empty() && (sMessage.Token(0) == "DH1080_INIT" || sMessage.Token(0) == "DH1080_FINISH")) {
+                        CQuery* pQuery = m_pNetwork->AddQuery(Nick.GetNick());
+                        pQuery->AddBuffer(
+                                ":" + GetModNick() + "!" + GetModName() + "@znc.in PRIVMSG " + _NAMEDFMT(Nick.GetNick()) + " :{text}",
+                                "Blocked " + sMessage.Token(0) + " from " + Nick.GetNickMask());
                         return HALT;
                 }
                 return CONTINUE;
         }
 };
 
-MODULEDEFS(CFred, "Blocks/Logs Fish-KeyX if no Client connected")
+MODULEDEFS(CBlockKeyX, "Blocks/Logs Fish-KeyX if no Client connected")
