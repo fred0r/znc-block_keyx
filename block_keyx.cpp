@@ -23,4 +23,10 @@ public:
         }
 };
 
-MODULEDEFS(CBlockKeyX, "Blocks/Logs Fish-KeyX if no Client connected")
+template <>
+void TModInfo<CBlockKeyX>(CModInfo& Info) {
+    Info.SetWikiPage("block_keyx");
+}
+
+MODULEDEFS(CBlockKeyX,
+           "Blocks/Logs Fish-KeyX if no Client connected")
